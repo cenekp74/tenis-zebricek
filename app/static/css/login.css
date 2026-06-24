@@ -1,0 +1,66 @@
+/* tohle je mega zbytecne dlouhy zkopiroval jsem to z jinyho projektu je to uplne jedno */
+:root {
+    --form-color: #2e2e36;
+    --form-field-color: #55535f;
+}
+
+.login-container {
+    width: 70%;
+    min-width: 320px;
+    max-width: 500px;
+    background-color: var(--form-color);
+    margin: auto;
+    margin-top: 3rem;
+    padding: 20px;
+    border-radius: var(--border-radius);
+}
+
+fieldset {
+    padding: 0;
+    margin: 0;
+    border: 0;
+}
+
+legend {
+    border-bottom: 1px solid var(--text-color);
+    float: left;
+    width: 100%;
+    padding: 0;
+    margin-bottom: 1.2rem;
+    font-size: calc(1.275rem + .3vw);
+    line-height: inherit;
+}
+
+label {
+    font-size: 120%;
+}
+
+input.form-input {
+    width: 100%;
+    background-color: var(--form-field-color);
+    color: var(--text-color);
+    border: none;
+    height: 3rem;
+    border-radius: var(--border-radius);
+    text-indent: 5px;
+    font-size: 110%;
+    margin-top: 0.2rem;
+}
+
+
+.form-submit {
+    width: 100%;
+    margin-bottom: 5px;
+    padding: 10px 20px;
+    font-size: 16px;
+    text-align: center;
+    text-decoration: none;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.form-group:not(:last-child) {
+    margin-bottom: 1rem;
+}
