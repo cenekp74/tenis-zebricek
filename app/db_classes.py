@@ -12,4 +12,4 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(120), nullable=False, unique=True)
     password = db.Column(db.String(60), nullable=False)
     admin = db.Column(db.Integer, nullable=False, default=0)
-    pp_filename = db.Column(db.String(64), nullable=True)
+    pp_filename = db.Column(db.String(64), nullable=False, default="default_pp.png")
