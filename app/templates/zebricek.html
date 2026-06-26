@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/zebricek.css') }}">
+{% endblock %}
+
+{% block body %}
+    <h1>Žebříček</h1>
+
+    <ol class="ladder">
+        {% for player in players %}
+        <li class="ladder__item">
+            <span class="ladder__rank">{{ loop.index }}</span>
+            <a href="{{ url_for('public_profile', username=player.username) }}" class="ladder__player">
+                <div class="ladder__avatar">
+                    <img src="{{ url_for('public_profile_picture', filename=player.pp_filename) }}" alt="{{ player.name }}">
+                </div>
+                <span class="ladder__name">{{ player.name }}</span>
+            </a>
+            {% if player.rank == 0 %}
+                <span class="ladder__unranked">neřazený</span>
+            {% endif %}
+        </li>
+        {% else %}
+        <li class="ladder__empty">Zatím žádní hráči.</li>
+        {% endfor %}
+    </ol>
+{% endblock %}

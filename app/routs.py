@@ -14,6 +14,11 @@ MAX_PP_SIZE = 2 * 1024 * 1024  # 2 MB
 def index():
     return render_template('index.html')
 
+@app.route('/zebricek')
+def zebricek():
+    users = sorted(User.query.all(), key=lambda u: (u.rank == 0, u.rank))
+    return render_template('zebricek.html', players=users)
+
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
