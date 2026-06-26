@@ -37,4 +37,12 @@
         </div>
     </form>
 </div>
+
+<div class="rank-info">
+    <h1>Pořadí v žebříčku</h1>
+    <span>
+        <i>aktuální pořadí: </i>
+        <b>{{ '---' if current_user.rank == 0 else current_user.rank }}</b>
+    </span>
+</div>
 {% endblock %}

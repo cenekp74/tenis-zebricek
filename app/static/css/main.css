@@ -232,6 +232,20 @@ a:hover {
     opacity: 1;
 }
 
+.rank-info {
+    gap: 20px;
+    background: #fff;
+    border: 1px solid var(--nav-border);
+    border-radius: var(--border-radius);
+    padding: 24px;
+    margin-top: 16px;
+}
+
+.rank-info > h1 {
+    margin-top: 0;
+    font-size: 1.6rem;
+}
+
 /* ── Profile ── */
 
 .profile-info {
