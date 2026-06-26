@@ -8,6 +8,11 @@ def main():
         print("Username cannot be empty.")
         sys.exit(1)
 
+    name = input("Name: ").strip()
+    if not name:
+        print("Name cannot be empty.")
+        sys.exit(1)
+
     password = input("Password: ").strip()
     if not password:
         print("Password cannot be empty.")
@@ -22,7 +27,7 @@ def main():
 
     with app.app_context():
         hashed = bcrypt.generate_password_hash(password).decode("utf-8")
-        user = User(username=username, email=email, password=hashed, admin=int(is_admin))
+        user = User(username=username, email=email, name=name, password=hashed, admin=int(is_admin))
         db.session.add(user)
         db.session.commit()
         print(f"User '{username}' created (admin={is_admin}).")
