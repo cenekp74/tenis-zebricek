@@ -2,11 +2,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from flask import Flask
-
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_migrate import Migrate
+from flask_mail import Mail
 
 app = Flask(__name__)
 app.secret_key = 'dev'
@@ -17,5 +17,9 @@ db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 migrate = Migrate(app, db)
 login_manager = LoginManager(app)
+mail = Mail(app)
+
+from app.tasks import make_celery
+make_celery(app)
 
 from app import routs

@@ -8,7 +8,7 @@ from app.forms import LoginForm
 def require_login():
     if not request.endpoint:
         return
-    if not current_user.is_authenticated and request.endpoint not in ['login', 'static']:
+    if not current_user.is_authenticated and request.endpoint not in ['login', 'static', 'test']:
         return redirect(url_for('login'))
 
 @app.route('/')

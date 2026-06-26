@@ -1,0 +1,13 @@
+[Unit]
+Description=Celery Worker for zebricek
+After=network.target redis.service
+
+[Service]
+User=www-data
+WorkingDirectory=/path/to/tenis-zebricek
+ExecStart=/path/to/tenis-zebricek/venv/bin/celery -A app.tasks.celery worker --loglevel=info
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
