@@ -1,11 +1,12 @@
 import os
 import uuid
+import json
 from app import app, db, bcrypt
 from flask import render_template, url_for, request, redirect, abort, flash, send_from_directory
 from flask_login import login_required, login_user, logout_user, current_user
 from werkzeug.utils import secure_filename
-from app.db_classes import User, Challenge
-from app.forms import LoginForm, EditProfileForm, ChallengeForm
+from app.db_classes import User, Challenge, Match
+from app.forms import LoginForm, EditProfileForm, ChallengeForm, RecordMatchForm
 
 MAX_PP_SIZE = 2 * 1024 * 1024  # 2 MB
 
@@ -110,3 +111,56 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('login'))
+
+@app.route('/record-match', methods=['GET', 'POST'])
+@login_required
+def record_match():
+    form = RecordMatchForm()
+    opponents = User.query.filter(User.id != current_user.id).order_by(User.rank).all()
+    form.opponent.choices = [
+        (u.id, f"{u.name} (#{u.rank if u.rank > 0 else '—'})")
+        for u in opponents
+    ]
+
+    if request.method == 'GET':
+        preselect = request.args.get('opponent', type=int)
+        if preselect:
+            form.opponent.data = preselect
+
+    if form.validate_on_submit():
+        opponent_id = form.opponent.data
+        try:
+            sets = json.loads(form.sets_data.data or '[]')
+            print(form.sets_data.data)
+            if not sets or not all(isinstance(s, list) and len(s) == 2 for s in sets):
+                raise ValueError
+        except (ValueError, TypeError):
+            flash('Zadejte skóre alespoň jednoho setu.', 'danger')
+            return redirect(url_for('record_match'))
+
+        opponent = User.query.get_or_404(opponent_id)
+
+        match = Match(
+            player1_id=current_user.id,
+            player2_id=opponent_id,
+            player1_rank=current_user.rank,
+            player2_rank=opponent.rank,
+            sets=sets,
+            recorded_by_id=current_user.id,
+        )
+        db.session.add(match)
+        db.session.commit()
+        flash('Výsledek byl uložen.', 'success')
+        return redirect(url_for('match_detail', match_id=match.id))
+
+    return render_template('record_match.html', form=form)
+
+@app.route('/matches')
+def matches():
+    all_matches = Match.query.order_by(Match.played_at.desc()).all()
+    return render_template('matches.html', matches=all_matches)
+
+@app.route('/matches/<int:match_id>')
+def match_detail(match_id):
+    match = Match.query.get_or_404(match_id)
+    return render_template('match_detail.html', match=match)

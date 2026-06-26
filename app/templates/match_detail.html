@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block title %}Zápas – Astra Tenis{% endblock %}
+
+{% block body %}
+<div class="challenges-section">
+    <div class="challenges-section__title">
+        <i class="fa-solid fa-table-tennis-paddle-ball"></i> Detail zápasu
+        {% if match.verified %}
+            <span class="badge badge--verified" style="margin-left:auto;"><i class="fa-solid fa-circle-check"></i> Ověřeno</span>
+        {% else %}
+            <span class="badge badge--unverified" style="margin-left:auto;"><i class="fa-solid fa-clock"></i> Neověřeno</span>
+        {% endif %}
+    </div>
+
+    <div class="match-detail__players">
+        <div class="match-detail__player">
+            <div class="profile-info__avatar">
+                <img src="{{ url_for('public_profile_picture', filename=match.player1.pp_filename) }}" alt="">
+            </div>
+            <div>
+                <p class="profile-info__name">
+                    <a href="{{ url_for('public_profile', username=match.player1.username) }}">{{ match.player1.name }}</a>
+                </p>
+                <p class="profile-info__meta">Žebříček: #{{ match.player1_rank if match.player1_rank > 0 else '—' }}</p>
+            </div>
+        </div>
+
+        <div class="match-detail__sets">
+            <table class="match-score-table">
+                <thead>
+                    <tr>
+                        <th></th>
+                        {% for i in range(match.sets | length) %}
+                            <th>Set {{ loop.index }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="match-score-table__name">{{ match.player1.name }}</td>
+                        {% for s in match.sets %}
+                            <td class="{% if s[0] > s[1] %}match-score-table__win{% endif %}">{{ s[0] }}</td>
+                        {% endfor %}
+                    </tr>
+                    <tr>
+                        <td class="match-score-table__name">{{ match.player2.name }}</td>
+                        {% for s in match.sets %}
+                            <td class="{% if s[1] > s[0] %}match-score-table__win{% endif %}">{{ s[1] }}</td>
+                        {% endfor %}
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="match-detail__player match-detail__player--right">
+            <div class="profile-info__avatar">
+                <img src="{{ url_for('public_profile_picture', filename=match.player2.pp_filename) }}" alt="">
+            </div>
+            <div>
+                <p class="profile-info__name">
+                    <a href="{{ url_for('public_profile', username=match.player2.username) }}">{{ match.player2.name }}</a>
+                </p>
+                <p class="profile-info__meta">Žebříček: #{{ match.player2_rank if match.player2_rank > 0 else '—' }}</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="match-detail__footer">
+        <p class="challenge-card__date">
+            <i class="fa-solid fa-calendar"></i>
+            Odehráno: {{ match.played_at.strftime('%d. %m. %Y') }}
+        </p>
+        <p class="challenge-card__date">
+            <i class="fa-solid fa-user-pen"></i>
+            Zaznamenal/a: <a href="{{ url_for('public_profile', username=match.recorded_by.username) }}">{{ match.recorded_by.name }}</a>
+            {{ match.recorded_at.strftime('%d. %m. %Y, %H:%M') }}
+        </p>
+    </div>
+</div>
+
+<div style="margin-top:0.75rem;">
+    <a href="{{ url_for('matches') }}" class="btn-primary">← Zpět na zápasy</a>
+</div>
+{% endblock %}

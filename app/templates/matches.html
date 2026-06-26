@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Zápasy – Astra Tenis{% endblock %}
+
+{% block body %}
+<div class="challenges-section">
+    <div class="challenges-section__title">
+        <i class="fa-solid fa-table-tennis-paddle-ball"></i> Zápasy
+        {% if current_user.is_authenticated %}
+            <a href="{{ url_for('record_match') }}" class="btn-primary" style="margin-left:auto;font-size:0.85rem;padding:0.35rem 0.9rem;">
+                <i class="fa-solid fa-plus"></i> Zaznamenat výsledek
+            </a>
+        {% endif %}
+    </div>
+
+    {% if matches %}
+        <ul class="match-list">
+            {% for m in matches %}
+            <li class="match-card">
+                <a href="{{ url_for('match_detail', match_id=m.id) }}" class="match-card__link">
+                    <div class="match-card__players">
+                        <span class="match-card__player">
+                            <img src="{{ url_for('public_profile_picture', filename=m.player1.pp_filename) }}" alt="" class="match-card__avatar">
+                            {{ m.player1.name }}
+                            <span class="match-card__rank">#{{ m.player1_rank if m.player1_rank > 0 else '—' }}</span>
+                        </span>
+                        <span class="match-card__score">
+                            {% for s in m.sets %}{{ s[0] }}:{{ s[1] }}{% if not loop.last %}, {% endif %}{% endfor %}
+                        </span>
+                        <span class="match-card__player match-card__player--right">
+                            <span class="match-card__rank">#{{ m.player2_rank if m.player2_rank > 0 else '—' }}</span>
+                            {{ m.player2.name }}
+                            <img src="{{ url_for('public_profile_picture', filename=m.player2.pp_filename) }}" alt="" class="match-card__avatar">
+                        </span>
+                    </div>
+                    <div class="match-card__meta">
+                        <span>{{ m.played_at.strftime('%d. %m. %Y') }}</span>
+                        {% if m.verified %}
+                            <span class="badge badge--verified"><i class="fa-solid fa-circle-check"></i> Ověřeno</span>
+                        {% else %}
+                            <span class="badge badge--unverified"><i class="fa-solid fa-clock"></i> Neověřeno</span>
+                        {% endif %}
+                    </div>
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="challenges-empty">Zatím nebyly zaznamenány žádné zápasy.</p>
+    {% endif %}
+</div>
+{% endblock %}

@@ -26,6 +26,7 @@
         <div class="navbar-menu" id="navbarMenu">
             <div class="navbar-links">
                 <a href="{{ url_for('zebricek') }}" class="navbar-link">Žebříček</a>
+                <a href="{{ url_for('matches') }}" class="navbar-link">Zápasy</a>
                 {% if current_user.is_authenticated %}
                     <a href="{{ url_for('challenge') }}" class="navbar-link">Vyzvat hráče</a>
                 {% endif %}
