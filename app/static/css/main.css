@@ -448,6 +448,7 @@ a:hover {
 }
 
 .btn-primary {
+    display: inline-block;
     background-color: var(--accent-color);
     color: #fff;
     border: none;
@@ -457,8 +458,25 @@ a:hover {
     font-weight: 500;
     cursor: pointer;
     transition: background-color 0.15s;
+    text-decoration: none;
 }
 
 .btn-primary:hover {
     background-color: var(--accent-hover);
+    color: #fff;
+}
+
+.profile-info__details {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.btn-challenge {
+    margin-left: auto;
+    white-space: nowrap;
+    flex-shrink: 0;
 }

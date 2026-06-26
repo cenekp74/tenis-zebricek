@@ -73,6 +73,10 @@ def challenge():
         (u.id, f"{u.name} (#{u.rank if u.rank > 0 else '—'})")
         for u in opponents
     ]
+    if request.method == 'GET':
+        preselect = request.args.get('opponent', type=int)
+        if preselect:
+            form.opponent.data = preselect
     if form.validate_on_submit():
         new_challenge = Challenge(
             challenger_id=current_user.id,
