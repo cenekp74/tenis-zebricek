@@ -4,13 +4,6 @@ from flask_login import login_required, login_user, logout_user, current_user
 from app.db_classes import User
 from app.forms import LoginForm
 
-@app.before_request
-def require_login():
-    if not request.endpoint:
-        return
-    if not current_user.is_authenticated and request.endpoint not in ['login', 'static', 'test']:
-        return redirect(url_for('login'))
-
 @app.route('/')
 @app.route('/index')
 def index():

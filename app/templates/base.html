@@ -4,13 +4,60 @@
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0", shrink-to-fit="no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <link rel="icon" href="{{ url_for('static', filename='img/logo.svg') }}" type="image/svg+xml">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <title>{% block title %}Astra Tenis{% endblock %}</title>
     {% block head %}{% endblock %}
 </head>
 
 <body>
-    {% block body %}{% endblock %}
+    <nav class="navbar">
+        <a href="{{ url_for('index') }}" class="navbar-brand">
+            <img src="{{ url_for('static', filename='img/logo.svg') }}" alt="Astra Tenis logo" class="navbar-logo">
+            Žebříček - TJ Astra tenis
+        </a>
+
+        <button class="navbar-toggle" id="navbarToggle" aria-label="Otevřít menu" aria-expanded="false">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+
+        <div class="navbar-menu" id="navbarMenu">
+            <div class="navbar-links">
+                <a href="{{ url_for('index') }}" class="navbar-link">Žebříček</a>
+                {% block nav_links %}{% endblock %}
+            </div>
+
+            <div class="navbar-account">
+                {% if current_user.is_authenticated %}
+                    <span class="navbar-username">
+                        <i class="fa-solid fa-user"></i> {{ current_user.username }}
+                    </span>
+                    <a href="{{ url_for('logout') }}" class="navbar-link navbar-link--accent">Odhlásit</a>
+                {% else %}
+                    <a href="{{ url_for('login') }}" class="navbar-link navbar-link--accent">
+                        <i class="fa-solid fa-right-to-bracket"></i> Přihlásit
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for category, message in messages %}
+                <div class="alert alert--{{ category }}">
+                    {{ message }}
+                    <i class="fa-solid fa-xmark" onclick="setParentDisplayNone(this)"></i>
+                </div>
+            {% endfor %}
+        {% endwith %}
+
+        {% block body %}{% endblock %}
+    </main>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
 </body>
 
 </html>
