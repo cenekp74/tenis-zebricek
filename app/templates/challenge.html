@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Výzva – Astra Tenis{% endblock %}
+
+{% block body %}
+<div class="profile-edit">
+    <h2>Vyzvat hráče</h2>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+
+        <div class="form-field">
+            {{ form.opponent.label }}
+            {{ form.opponent(class="form-select") }}
+            {% for error in form.opponent.errors %}
+                <p class="form-error">{{ error }}</p>
+            {% endfor %}
+        </div>
+
+        <div class="form-field">
+            {{ form.message.label }}
+            {{ form.message(class="form-textarea", rows=4, placeholder="Napište vlastní zprávu...") }}
+        </div>
+
+        <div class="form-actions">
+            {{ form.submit(class="btn-primary") }}
+        </div>
+    </form>
+</div>
+{% endblock %}

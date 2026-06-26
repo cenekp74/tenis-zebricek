@@ -26,11 +26,17 @@
         <div class="navbar-menu" id="navbarMenu">
             <div class="navbar-links">
                 <a href="{{ url_for('zebricek') }}" class="navbar-link">Žebříček</a>
+                {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('challenge') }}" class="navbar-link">Vyzvat hráče</a>
+                {% endif %}
                 {% block nav_links %}{% endblock %}
             </div>
 
             <div class="navbar-account">
                 {% if current_user.is_authenticated %}
+                    <a href="{{ url_for('my_challenges') }}" class="navbar-link">
+                        <i class="fa-solid fa-bell"></i> Výzvy
+                    </a>
                     <a href="{{ url_for('profile') }}" class="navbar-link navbar-username">
                         <i class="fa-solid fa-user"></i> {{ current_user.username }}
                     </a>

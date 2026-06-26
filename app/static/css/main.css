@@ -338,6 +338,115 @@ a:hover {
     border-top: 1px solid var(--nav-border);
 }
 
+/* ── Challenges ── */
+
+.challenges-section {
+    background: #fff;
+    border: 1px solid var(--nav-border);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.challenges-section__title {
+    margin: 0 0 1rem;
+    font-size: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.challenge-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.challenge-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border: 1px solid var(--nav-border);
+    border-radius: var(--border-radius);
+    background: var(--bg-color);
+}
+
+.challenge-card__avatar {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: var(--accent-color);
+}
+
+.challenge-card__avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.challenge-card__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    min-width: 0;
+}
+
+.challenge-card__who {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.challenge-card__message {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--text-color);
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.challenge-card__date {
+    margin: 0;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+.challenges-empty {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.form-select,
+.form-textarea {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--nav-border);
+    border-radius: var(--border-radius);
+    font-size: 0.9rem;
+    font-family: inherit;
+    color: var(--text-color);
+    background: #fff;
+}
+
+.form-select:focus,
+.form-textarea:focus {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 1px;
+}
+
+.form-textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
 .btn-primary {
     background-color: var(--accent-color);
     color: #fff;

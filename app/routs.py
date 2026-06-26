@@ -4,8 +4,8 @@ from app import app, db, bcrypt
 from flask import render_template, url_for, request, redirect, abort, flash, send_from_directory
 from flask_login import login_required, login_user, logout_user, current_user
 from werkzeug.utils import secure_filename
-from app.db_classes import User
-from app.forms import LoginForm, EditProfileForm
+from app.db_classes import User, Challenge
+from app.forms import LoginForm, EditProfileForm, ChallengeForm
 
 MAX_PP_SIZE = 2 * 1024 * 1024  # 2 MB
 
@@ -63,6 +63,34 @@ def public_profile_picture(filename):
 def public_profile(username):
     user = User.query.filter_by(username=username).first_or_404()
     return render_template('public_profile.html', user=user)
+
+@app.route('/challenge', methods=['GET', 'POST'])
+@login_required
+def challenge():
+    form = ChallengeForm()
+    opponents = User.query.filter(User.id != current_user.id).order_by(User.rank).all()
+    form.opponent.choices = [
+        (u.id, f"{u.name} (#{u.rank if u.rank > 0 else '—'})")
+        for u in opponents
+    ]
+    if form.validate_on_submit():
+        new_challenge = Challenge(
+            challenger_id=current_user.id,
+            opponent_id=form.opponent.data,
+            message=form.message.data or None
+        )
+        db.session.add(new_challenge)
+        db.session.commit()
+        flash('Výzva byla odeslána!', 'success')
+        return redirect('/')
+    return render_template('challenge.html', form=form)
+
+@app.route('/my-challenges')
+@login_required
+def my_challenges():
+    received = Challenge.query.filter_by(opponent_id=current_user.id).order_by(Challenge.created_at.desc()).all()
+    sent = Challenge.query.filter_by(challenger_id=current_user.id).order_by(Challenge.created_at.desc()).all()
+    return render_template('my_challenges.html', received=received, sent=sent)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Moje výzvy – Astra Tenis{% endblock %}
+
+{% block body %}
+
+<div class="challenges-section">
+    <h2 class="challenges-section__title">
+        <i class="fa-solid fa-inbox"></i> Přijaté výzvy
+    </h2>
+    {% if received %}
+        <ul class="challenge-list">
+            {% for ch in received %}
+            <li class="challenge-card">
+                <div class="challenge-card__avatar">
+                    <img src="{{ url_for('public_profile_picture', filename=ch.challenger.pp_filename) }}" alt="">
+                </div>
+                <div class="challenge-card__body">
+                    <p class="challenge-card__who">
+                        <a href="{{ url_for('public_profile', username=ch.challenger.username) }}">{{ ch.challenger.name }}</a>
+                        vás vyzval/a
+                    </p>
+                    {% if ch.message %}
+                        <p class="challenge-card__message">{{ ch.message }}</p>
+                    {% endif %}
+                    <p class="challenge-card__date">{{ ch.created_at.strftime('%d. %m. %Y, %H:%M') }}</p>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="challenges-empty">Žádné přijaté výzvy.</p>
+    {% endif %}
+</div>
+
+<div class="challenges-section">
+    <h2 class="challenges-section__title">
+        <i class="fa-solid fa-paper-plane"></i> Odeslané výzvy
+    </h2>
+    {% if sent %}
+        <ul class="challenge-list">
+            {% for ch in sent %}
+            <li class="challenge-card">
+                <div class="challenge-card__avatar">
+                    <img src="{{ url_for('public_profile_picture', filename=ch.opponent.pp_filename) }}" alt="">
+                </div>
+                <div class="challenge-card__body">
+                    <p class="challenge-card__who">
+                        Výzva pro
+                        <a href="{{ url_for('public_profile', username=ch.opponent.username) }}">{{ ch.opponent.name }}</a>
+                    </p>
+                    {% if ch.message %}
+                        <p class="challenge-card__message">{{ ch.message }}</p>
+                    {% endif %}
+                    <p class="challenge-card__date">{{ ch.created_at.strftime('%d. %m. %Y, %H:%M') }}</p>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="challenges-empty">Žádné odeslané výzvy.</p>
+    {% endif %}
+</div>
+
+{% endblock %}

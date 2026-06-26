@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
-from wtforms import StringField, PasswordField, SubmitField, BooleanField, BooleanField
+from wtforms import StringField, PasswordField, SubmitField, BooleanField, SelectField, TextAreaField
 from wtforms.validators import DataRequired
 
 class EditProfileForm(FlaskForm):
@@ -8,6 +8,11 @@ class EditProfileForm(FlaskForm):
         FileAllowed(['jpg', 'jpeg', 'png', 'webp'], 'Povolené formáty: jpg, jpeg, png, webp.')
     ])
     submit = SubmitField('Uložit')
+
+class ChallengeForm(FlaskForm):
+    opponent = SelectField('Protihráč', coerce=int, validators=[DataRequired()])
+    message = TextAreaField('Zpráva (nepovinná)')
+    submit = SubmitField('Vyzvat')
 
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
