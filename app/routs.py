@@ -14,16 +14,6 @@ MAX_PP_SIZE = 2 * 1024 * 1024  # 2 MB
 def index():
     return render_template('index.html')
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    form = LoginForm()
-    if form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data).first()
-        if user and bcrypt.check_password_hash(user.password, form.password.data):
-            login_user(user, remember=form.remember.data)
-            return redirect('/')
-    return render_template('login.html', form=form)
-
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
@@ -68,6 +58,16 @@ def public_profile_picture(filename):
 def public_profile(username):
     user = User.query.filter_by(username=username).first_or_404()
     return render_template('public_profile.html', user=user)
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(username=form.username.data).first()
+        if user and bcrypt.check_password_hash(user.password, form.password.data):
+            login_user(user, remember=form.remember.data)
+            return redirect('/')
+    return render_template('login.html', form=form)
 
 @app.route('/logout')
 def logout():
