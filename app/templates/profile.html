@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block title %}Profil – Astra Tenis{% endblock %}
+
+{% block body %}
+<div class="profile-info">
+    <div class="profile-info__avatar">
+        {% if current_user.pp_filename %}
+            <img src="{{ url_for('profile_picture', filename=current_user.pp_filename) }}" alt="Profilová fotografie">
+        {% else %}
+            <i class="fa-solid fa-user"></i>
+        {% endif %}
+    </div>
+    <div>
+        <h1 class="profile-info__name">{{ current_user.name }}</h1>
+        <p class="profile-info__meta">@{{ current_user.username }}</p>
+        <p class="profile-info__meta">{{ current_user.email }}</p>
+    </div>
+</div>
+
+<div class="profile-edit">
+    <h2>Upravit údaje</h2>
+    <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+
+        <div class="form-field">
+            {{ form.picture.label }}
+            {{ form.picture(accept="image/jpeg,image/png,image/webp") }}
+            <p class="form-hint">Povolené formáty: jpg, png, webp — max. 2 MB.</p>
+            {% for error in form.picture.errors %}
+                <p class="form-error">{{ error }}</p>
+            {% endfor %}
+        </div>
+
+        <div class="form-actions">
+            {{ form.submit(class="btn-primary") }}
+        </div>
+    </form>
+</div>
+{% endblock %}

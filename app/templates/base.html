@@ -31,9 +31,9 @@
 
             <div class="navbar-account">
                 {% if current_user.is_authenticated %}
-                    <span class="navbar-username">
+                    <a href="{{ url_for('profile') }}" class="navbar-link navbar-username">
                         <i class="fa-solid fa-user"></i> {{ current_user.username }}
-                    </span>
+                    </a>
                     <a href="{{ url_for('logout') }}" class="navbar-link navbar-link--accent">Odhlásit</a>
                 {% else %}
                     <a href="{{ url_for('login') }}" class="navbar-link navbar-link--accent">
