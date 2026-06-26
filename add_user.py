@@ -13,11 +13,16 @@ def main():
         print("Password cannot be empty.")
         sys.exit(1)
 
+    email = input("Email: ").strip()
+    if not email:
+        print("Email cannot be empty.")
+        sys.exit(1)
+
     is_admin = input("Admin? [y/N]: ").strip().lower() == "y"
 
     with app.app_context():
         hashed = bcrypt.generate_password_hash(password).decode("utf-8")
-        user = User(username=username, password=hashed, admin=int(is_admin))
+        user = User(username=username, email=email, password=hashed, admin=int(is_admin))
         db.session.add(user)
         db.session.commit()
         print(f"User '{username}' created (admin={is_admin}).")
