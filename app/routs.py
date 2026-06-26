@@ -60,6 +60,15 @@ def profile():
 def profile_picture(filename):
     return send_from_directory(os.path.join(app.instance_path, 'pp'), filename)
 
+@app.route('/uploads/pp/public/<filename>')
+def public_profile_picture(filename):
+    return send_from_directory(os.path.join(app.instance_path, 'pp'), filename)
+
+@app.route('/u/<username>')
+def public_profile(username):
+    user = User.query.filter_by(username=username).first_or_404()
+    return render_template('public_profile.html', user=user)
+
 @app.route('/logout')
 def logout():
     logout_user()

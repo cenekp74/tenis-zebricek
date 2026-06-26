@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}{{ user.name }} – Astra Tenis{% endblock %}
+
+{% block body %}
+<div class="profile-info">
+    <div class="profile-info__avatar">
+        {% if user.pp_filename %}
+            <img src="{{ url_for('public_profile_picture', filename=user.pp_filename) }}" alt="Profilová fotografie">
+        {% else %}
+            <i class="fa-solid fa-user"></i>
+        {% endif %}
+    </div>
+    <div>
+        <h1 class="profile-info__name">{{ user.name }}</h1>
+        <p class="profile-info__meta">@{{ user.username }}</p>
+    </div>
+</div>
+
+<div class="rank-info">
+    <h1>Pořadí v žebříčku</h1>
+    <span>
+        <i>aktuální pořadí: </i>
+        <b>{{ '---' if current_user.rank == 0 else current_user.rank }}</b>
+    </span>
+</div>
+
+{% endblock %}

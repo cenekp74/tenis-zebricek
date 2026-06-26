@@ -13,7 +13,7 @@
     </div>
     <div>
         <h1 class="profile-info__name">{{ current_user.name }}</h1>
-        <p class="profile-info__meta">@{{ current_user.username }}</p>
+        <p class="profile-info__meta"><a href="{{ url_for('public_profile', username=current_user.username) }}">@{{ current_user.username }}</a></p>
         <p class="profile-info__meta">{{ current_user.email }}</p>
     </div>
 </div>
@@ -36,13 +36,5 @@
             {{ form.submit(class="btn-primary") }}
         </div>
     </form>
-</div>
-
-<div class="rank-info">
-    <h1>Pořadí v žebříčku</h1>
-    <span>
-        <i>aktuální pořadí: </i>
-        <b>{{ '---' if current_user.rank == 0 else current_user.rank }}</b>
-    </span>
 </div>
 {% endblock %}
