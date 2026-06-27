@@ -30,6 +30,9 @@
             <button type="button" class="btn-secondary" id="addSetBtn">
                 <i class="fa-solid fa-plus"></i> Přidat set
             </button>
+            <button type="button" class="btn-secondary" id="addTiebreakBtn">
+                <i class="fa-solid fa-bolt"></i> Přidat tiebreak
+            </button>
         </div>
 
         <div class="form-actions">
@@ -42,49 +45,163 @@
 (function () {
     const rowsContainer = document.getElementById('setRows');
     const setsDataInput = document.querySelector('[name=sets_data]');
+    const addTiebreakBtn = document.getElementById('addTiebreakBtn');
 
     function addRow(p1Val, p2Val) {
-        const idx = rowsContainer.children.length + 1;
+        const idx = rowsContainer.querySelectorAll('.match-sets__row:not(.match-sets__row--tb)').length + 1;
         const row = document.createElement('div');
         row.className = 'match-sets__row';
         row.innerHTML =
             '<span class="match-sets__num">' + idx + '.</span>' +
             '<input type="number" class="match-sets__score form-input-small" min="0" max="99" value="' + (p1Val !== undefined ? p1Val : '') + '">' +
             '<input type="number" class="match-sets__score form-input-small" min="0" max="99" value="' + (p2Val !== undefined ? p2Val : '') + '">' +
-            '<button type="button" class="match-sets__remove" onclick="this.parentElement.remove(); renumber();" title="Odebrat">' +
+            '<button type="button" class="match-sets__remove" title="Odebrat">' +
                 '<i class="fa-solid fa-trash-can"></i>' +
             '</button>';
+        row.querySelector('.match-sets__remove').addEventListener('click', function () {
+            row.remove();
+            renumber();
+        });
         rowsContainer.appendChild(row);
     }
 
+    function addTiebreakRow(initialWinner) {
+        var row = document.createElement('div');
+        row.className = 'match-sets__row match-sets__row--tb';
+        row.dataset.tiebreak = '1';
+        row.innerHTML =
+            '<span class="match-sets__num match-sets__num--tb">TB</span>' +
+            '<div class="tb-toggle">' +
+                '<button type="button" class="tb-btn' + (initialWinner !== 'p2' ? ' tb-btn--active' : '') + '" data-winner="p1">Vy</button>' +
+                '<button type="button" class="tb-btn' + (initialWinner === 'p2' ? ' tb-btn--active' : '') + '" data-winner="p2">Soupeř</button>' +
+            '</div>' +
+            '<button type="button" class="match-sets__remove" title="Odebrat">' +
+                '<i class="fa-solid fa-trash-can"></i>' +
+            '</button>';
+        row.querySelectorAll('.tb-btn').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                row.querySelectorAll('.tb-btn').forEach(function (b) { b.classList.remove('tb-btn--active'); });
+                btn.classList.add('tb-btn--active');
+            });
+        });
+        row.querySelector('.match-sets__remove').addEventListener('click', function () {
+            row.remove();
+            addTiebreakBtn.disabled = false;
+        });
+        rowsContainer.appendChild(row);
+        addTiebreakBtn.disabled = true;
+    }
+
     window.renumber = function () {
-        Array.from(rowsContainer.children).forEach(function (row, i) {
-            row.querySelector('.match-sets__num').textContent = (i + 1) + '.';
+        var idx = 1;
+        Array.from(rowsContainer.children).forEach(function (row) {
+            if (!row.classList.contains('match-sets__row--tb')) {
+                row.querySelector('.match-sets__num').textContent = idx++ + '.';
+            }
         });
     };
 
     document.getElementById('addSetBtn').addEventListener('click', function () { addRow(); });
+    addTiebreakBtn.addEventListener('click', function () { addTiebreakRow(); });
+
+    function isValidTennisSet(a, b) {
+        var hi = Math.max(a, b);
+        var lo = Math.min(a, b);
+        if (hi === 6) return lo <= 4;
+        if (hi === 7) return lo === 5 || lo === 6;
+        return false;
+    }
 
     document.getElementById('matchForm').addEventListener('submit', function (e) {
-        const rows = rowsContainer.querySelectorAll('.match-sets__row');
+        var rows = rowsContainer.querySelectorAll('.match-sets__row');
         if (rows.length === 0) {
             e.preventDefault();
             alert('Zadejte skóre alespoň jednoho setu.');
             return;
         }
+
         var sets = [];
+        var regularIdx = 0;
         for (var i = 0; i < rows.length; i++) {
-            var inputs = rows[i].querySelectorAll('input[type=number]');
-            var g1 = parseInt(inputs[0].value, 10);
-            var g2 = parseInt(inputs[1].value, 10);
-            if (isNaN(g1) || isNaN(g2) || g1 < 0 || g2 < 0) {
+            var row = rows[i];
+            if (row.dataset.tiebreak) {
+                var activeBtn = row.querySelector('.tb-btn--active');
+                var winner = activeBtn ? activeBtn.dataset.winner : 'p1';
+                sets.push(winner === 'p1' ? [1, 0] : [0, 1]);
+            } else {
+                regularIdx++;
+                var inputs = row.querySelectorAll('input[type=number]');
+                var g1 = parseInt(inputs[0].value, 10);
+                var g2 = parseInt(inputs[1].value, 10);
+                if (isNaN(g1) || isNaN(g2)) {
+                    e.preventDefault();
+                    alert('Set ' + regularIdx + ': zadejte skóre pro oba hráče.');
+                    inputs[isNaN(g1) ? 0 : 1].focus();
+                    return;
+                }
+                if (!isValidTennisSet(g1, g2)) {
+                    e.preventDefault();
+                    alert('Set ' + regularIdx + ': neplatné tenisové skóre (' + g1 + ':' + g2 + ').\nPovolené výsledky setu: 6:0–6:4, 7:5, 7:6 (a zrcadlově).');
+                    return;
+                }
+                sets.push([g1, g2]);
+            }
+        }
+
+        // Tiebreak (1:0 or 0:1) is only valid as the last set when regular sets are tied 1-1
+        var lastSet = sets[sets.length - 1];
+        var lastIsTiebreak = (lastSet[0] + lastSet[1] === 1);
+        if (lastIsTiebreak) {
+            var regularSets = sets.slice(0, sets.length - 1);
+            if (regularSets.length !== 2) {
                 e.preventDefault();
-                alert('Zadejte platné skóre pro každý set (celá čísla ≥ 0).');
-                inputs[isNaN(g1) ? 0 : 1].focus();
+                alert('Tiebreak je možný pouze jako rozhodující třetí set při stavu setů 1:1.');
                 return;
             }
-            sets.push([g1, g2]);
+            var p1r = regularSets.filter(function (s) { return s[0] > s[1]; }).length;
+            var p2r = regularSets.length - p1r;
+            if (p1r !== p2r) {
+                e.preventDefault();
+                alert('Tiebreak je možný pouze jako rozhodující třetí set při stavu setů 1:1.');
+                return;
+            }
+        } else {
+            // No tiebreak as last set — check for tiebreak elsewhere (invalid)
+            for (var i = 0; i < sets.length - 1; i++) {
+                if (sets[i][0] + sets[i][1] === 1) {
+                    e.preventDefault();
+                    alert('Tiebreak musí být vždy poslední set.');
+                    return;
+                }
+            }
+
+            if (sets.length < 2 || sets.length > 3) {
+                e.preventDefault();
+                alert('Zápas musí mít 2 nebo 3 sety.');
+                return;
+            }
+
+            var p1Sets = 0, p2Sets = 0;
+            for (var i = 0; i < sets.length; i++) {
+                if (sets[i][0] > sets[i][1]) p1Sets++; else p2Sets++;
+            }
+            if (p1Sets === p2Sets) {
+                e.preventDefault();
+                alert('Zápas musí mít jasného vítěze (remíza setů není platný výsledek).');
+                return;
+            }
+
+            var p1run = 0, p2run = 0;
+            for (var i = 0; i < sets.length - 1; i++) {
+                if (sets[i][0] > sets[i][1]) p1run++; else p2run++;
+                if (p1run >= 2 || p2run >= 2) {
+                    e.preventDefault();
+                    alert('Zápas byl rozhodnut po setu ' + (i + 1) + '. Odstraňte nadbytečné sety.');
+                    return;
+                }
+            }
         }
+
         setsDataInput.value = JSON.stringify(sets);
     });
 

@@ -131,11 +131,44 @@ def record_match():
         opponent_id = form.opponent.data
         try:
             sets = json.loads(form.sets_data.data or '[]')
-            print(form.sets_data.data)
             if not sets or not all(isinstance(s, list) and len(s) == 2 for s in sets):
-                raise ValueError
-        except (ValueError, TypeError):
-            flash('Zadejte skóre alespoň jednoho setu.', 'danger')
+                raise ValueError('Neplatný formát setů.')
+            def valid_regular_set(g1, g2):
+                hi, lo = max(g1, g2), min(g1, g2)
+                return (hi == 6 and lo <= 4) or (hi == 7 and lo in (5, 6))
+
+            last = sets[-1]
+            last_is_tb = (int(last[0]) + int(last[1]) == 1 and max(int(last[0]), int(last[1])) == 1)
+
+            if last_is_tb:
+                regular = sets[:-1]
+                if len(regular) != 2:
+                    raise ValueError('Tiebreak je možný pouze jako rozhodující třetí set při stavu setů 1:1.')
+                for s in regular:
+                    g1, g2 = int(s[0]), int(s[1])
+                    if not valid_regular_set(g1, g2):
+                        raise ValueError(f'Neplatné skóre setu {g1}:{g2}.')
+                p1r = sum(1 for s in regular if int(s[0]) > int(s[1]))
+                if p1r != 1:
+                    raise ValueError('Tiebreak je možný pouze jako rozhodující třetí set při stavu setů 1:1.')
+            else:
+                for s in sets:
+                    g1, g2 = int(s[0]), int(s[1])
+                    if not valid_regular_set(g1, g2):
+                        raise ValueError(f'Neplatné skóre setu {g1}:{g2}.')
+                if len(sets) < 2 or len(sets) > 3:
+                    raise ValueError('Zápas musí mít 2 nebo 3 sety.')
+                p1_sets = sum(1 for s in sets if int(s[0]) > int(s[1]))
+                if p1_sets * 2 == len(sets):
+                    raise ValueError('Zápas musí mít jasného vítěze.')
+                p1r, p2r = 0, 0
+                for s in sets[:-1]:
+                    if int(s[0]) > int(s[1]): p1r += 1
+                    else: p2r += 1
+                    if p1r >= 2 or p2r >= 2:
+                        raise ValueError('Zápas obsahuje nadbytečné sety.')
+        except (ValueError, TypeError, KeyError) as exc:
+            flash(str(exc) if str(exc) else 'Neplatný výsledek zápasu.', 'danger')
             return redirect(url_for('record_match'))
 
         opponent = User.query.get_or_404(opponent_id)
