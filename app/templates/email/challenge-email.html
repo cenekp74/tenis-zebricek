@@ -1,0 +1,21 @@
+{% extends "email/base-email.html" %}
+{% block title %}
+Výzva od hráče {{ user.username }}
+{% endblock %}
+
+{% block body %}
+    <h1>Nová výzva</h1>
+    <p>
+        Obdržel/a jste výzvu od hráče <b>{{ user.name }}</b> <i>(@{{ user.username }})</i>
+    </p>
+    {% if challenge.message %}
+        <h3>Hráč k výzvě připojil zprávu:</h3>
+        <p>
+            {{ challenge.message }}
+        </p>
+    {% endif %}
+    <br><br>
+    <p>
+        Na výzvu můžete odpovědět prostřednictvím e-mailu hráče: <a href="mailto:{{ user.email }}">{{ user.email }}</a>. 
+    </p>
+{% endblock %}

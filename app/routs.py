@@ -7,6 +7,7 @@ from flask_login import login_required, login_user, logout_user, current_user
 from werkzeug.utils import secure_filename
 from app.db_classes import User, Challenge, Match
 from app.forms import LoginForm, EditProfileForm, ChallengeForm, RecordMatchForm
+from app.email_utils import queue_email
 
 MAX_PP_SIZE = 2 * 1024 * 1024  # 2 MB
 
@@ -86,6 +87,16 @@ def challenge():
         )
         db.session.add(new_challenge)
         db.session.commit()
+        challenger: User = User.query.get(current_user.id)
+        opponent: User = User.query.get(form.opponent.data)
+        queue_email(
+            subject=f"Výzva od hráče {challenger.name}",
+            recipients=[opponent.email],
+            template="challenge-email.html",
+            reply_to=challenger.email,
+            user=challenger,
+            challenge=new_challenge,
+        )
         flash('Výzva byla odeslána!', 'success')
         return redirect('/')
     return render_template('challenge.html', form=form)
