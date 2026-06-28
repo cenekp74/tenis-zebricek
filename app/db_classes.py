@@ -1,6 +1,7 @@
 from app import db, login_manager
 from flask_login import UserMixin
-from datetime import datetime, timezone
+from datetime import datetime
+from zoneinfo import ZoneInfo
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -21,7 +22,7 @@ class Challenge(db.Model):
     challenger_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     opponent_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     message = db.Column(db.Text, nullable=True)
-    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    created_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(ZoneInfo("Europe/Prague")))
 
     challenger = db.relationship('User', foreign_keys=[challenger_id], backref='challenges_sent')
     opponent = db.relationship('User', foreign_keys=[opponent_id], backref='challenges_received')
@@ -35,8 +36,8 @@ class Match(db.Model):
     sets = db.Column(db.JSON, nullable=False)  # [[p1_games, p2_games], ...]
     challenge_id = db.Column(db.Integer, db.ForeignKey('challenge.id'), nullable=True)
     verified = db.Column(db.Boolean, nullable=False, default=False)
-    played_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
-    recorded_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    played_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(ZoneInfo("Europe/Prague")))
+    recorded_at = db.Column(db.DateTime, nullable=False, default=lambda: datetime.now(ZoneInfo("Europe/Prague")))
     recorded_by_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
 
     player1 = db.relationship('User', foreign_keys=[player1_id], backref='matches_as_player1')
