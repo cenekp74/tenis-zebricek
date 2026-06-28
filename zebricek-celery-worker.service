@@ -1,0 +1,13 @@
+[Unit]
+Description=Celery Worker for Astra zebricek
+After=network.target redis.service
+
+[Service]
+User=zebricek
+WorkingDirectory=/home/zebricek/zebricek
+ExecStart=/home/zebricek/zebricek/venv/bin/celery -A app.tasks.celery worker --loglevel=info
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
