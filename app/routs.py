@@ -5,9 +5,22 @@ from app import app, db, bcrypt
 from flask import render_template, url_for, request, redirect, abort, flash, send_from_directory
 from flask_login import login_required, login_user, logout_user, current_user
 from werkzeug.utils import secure_filename
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from app.db_classes import User, Challenge, Match
 from app.forms import LoginForm, EditProfileForm, ChallengeForm, RecordMatchForm
 from app.email_utils import queue_email
+
+TOKEN_MAX_AGE = 7 * 24 * 3600  # 7 days
+
+
+def _make_match_token(match_id, opponent_id):
+    s = URLSafeTimedSerializer(app.config['SECRET_KEY'])
+    return s.dumps({'match_id': match_id, 'opponent_id': opponent_id})
+
+
+def _load_match_token(token):
+    s = URLSafeTimedSerializer(app.config['SECRET_KEY'])
+    return s.loads(token, max_age=TOKEN_MAX_AGE)
 
 MAX_PP_SIZE = 2 * 1024 * 1024  # 2 MB
 
@@ -182,7 +195,7 @@ def record_match():
             flash(str(exc) if str(exc) else 'Neplatný výsledek zápasu.', 'danger')
             return redirect(url_for('record_match'))
 
-        opponent = User.query.get_or_404(opponent_id)
+        opponent: User = User.query.get_or_404(opponent_id)
 
         match = Match(
             player1_id=current_user.id,
@@ -194,7 +207,19 @@ def record_match():
         )
         db.session.add(match)
         db.session.commit()
-        flash('Výsledek byl uložen.', 'success')
+
+        token = _make_match_token(match.id, opponent_id)
+        confirm_url = url_for('confirm_match', token=token, _external=True)
+        queue_email(
+            subject='Potvrďte výsledek zápasu',
+            recipients=[opponent.email],
+            template='match-confirmation-email.html',
+            recorder=current_user,
+            match=match,
+            confirm_url=confirm_url,
+        )
+
+        flash('Výsledek byl uložen. Soupeř obdržel e-mail s žádostí o potvrzení.', 'success')
         return redirect(url_for('match_detail', match_id=match.id))
 
     return render_template('record_match.html', form=form)
@@ -207,4 +232,34 @@ def matches():
 @app.route('/matches/<int:match_id>')
 def match_detail(match_id):
     match = Match.query.get_or_404(match_id)
-    return render_template('match_detail.html', match=match)
+    confirm_url = None
+    if not match.verified and current_user.is_authenticated:
+        opponent_id = match.player2_id if match.recorded_by_id == match.player1_id else match.player1_id
+        if current_user.id == opponent_id:
+            token = _make_match_token(match.id, opponent_id)
+            confirm_url = url_for('confirm_match', token=token)
+    return render_template('match_detail.html', match=match, confirm_url=confirm_url)
+
+
+@app.route('/confirm-match/<token>')
+def confirm_match(token):
+    try:
+        data = _load_match_token(token)
+    except (SignatureExpired, BadSignature):
+        flash('Odkaz pro potvrzení je neplatný nebo vypršel.', 'danger')
+        return redirect(url_for('matches'))
+
+    match = Match.query.get_or_404(data['match_id'])
+
+    if match.verified:
+        flash('Tento zápas již byl potvrzen.', 'info')
+        return redirect(url_for('match_detail', match_id=match.id))
+
+    expected_opponent_id = match.player2_id if match.recorded_by_id == match.player1_id else match.player1_id
+    if data['opponent_id'] != expected_opponent_id:
+        abort(403)
+
+    match.verified = True
+    db.session.commit()
+    flash('Výsledek zápasu byl úspěšně potvrzen!', 'success')
+    return redirect(url_for('match_detail', match_id=match.id))

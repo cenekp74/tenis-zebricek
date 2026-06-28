@@ -1,0 +1,60 @@
+{% extends "email/base-email.html" %}
+{% block title %}Potvrďte výsledek zápasu{% endblock %}
+
+{% block body %}
+    <h1 style="margin:0 0 16px;font-size:1.25rem;color:#111827;">Potvrďte výsledek zápasu</h1>
+    <p style="margin:0 0 20px;color:#374151;">
+        Hráč <b>{{ recorder.name }}</b> zaznamenal výsledek vašeho vzájemného zápasu.
+        Pokud je výsledek správný, potvrďte ho kliknutím na tlačítko níže.
+    </p>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0"
+           style="border-collapse:collapse;margin:0 0 20px;font-size:0.9rem;border:1px solid #e5e7eb;border-radius:4px;overflow:hidden;">
+        <thead>
+            <tr style="background-color:#f9fafb;">
+                <th style="text-align:left;padding:8px 12px;font-weight:600;color:#6b7280;border-bottom:1px solid #e5e7eb;"></th>
+                {% for i in range(match.sets | length) %}
+                    <th style="text-align:center;padding:8px 12px;font-weight:600;color:#6b7280;border-bottom:1px solid #e5e7eb;">Set {{ loop.index }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td style="padding:8px 12px;font-weight:600;color:#111827;">{{ match.player1.name }}</td>
+                {% for s in match.sets %}
+                    {% if s[0]|int > s[1]|int %}
+                    <td style="text-align:center;padding:8px 12px;font-weight:700;color:#059669;">{{ s[0] }}</td>
+                    {% else %}
+                    <td style="text-align:center;padding:8px 12px;color:#6b7280;">{{ s[0] }}</td>
+                    {% endif %}
+                {% endfor %}
+            </tr>
+            <tr style="border-top:1px solid #e5e7eb;">
+                <td style="padding:8px 12px;font-weight:600;color:#111827;">{{ match.player2.name }}</td>
+                {% for s in match.sets %}
+                    {% if s[1]|int > s[0]|int %}
+                    <td style="text-align:center;padding:8px 12px;font-weight:700;color:#059669;">{{ s[1] }}</td>
+                    {% else %}
+                    <td style="text-align:center;padding:8px 12px;color:#6b7280;">{{ s[1] }}</td>
+                    {% endif %}
+                {% endfor %}
+            </tr>
+        </tbody>
+    </table>
+
+    {% if match.winner %}
+        <p style="margin:0 0 24px;color:#374151;">
+            Vítěz: <b>{{ match.winner.name }}</b>
+        </p>
+    {% endif %}
+
+    <a href="{{ confirm_url }}"
+       style="display:inline-block;background-color:#4f46e5;color:#ffffff;text-decoration:none;padding:12px 28px;border-radius:6px;font-weight:600;font-size:0.95rem;">
+        Potvrdit výsledek
+    </a>
+
+    <p style="margin:24px 0 0;font-size:0.82rem;color:#6b7280;">
+        Odkaz je platný po dobu 7 dní. Pokud výsledek nesouhlasí, kontaktujte hráče
+        <a href="mailto:{{ recorder.email }}" style="color:#4f46e5;">{{ recorder.email }}</a>.
+    </p>
+{% endblock %}
