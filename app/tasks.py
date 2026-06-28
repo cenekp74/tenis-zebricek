@@ -18,9 +18,9 @@ def make_celery(flask_app):
 
 
 @celery.task
-def send_email(subject, recipients, html_body, text_body=None):
+def send_email(subject, recipients, html_body, text_body=None, reply_to=None):
     from app import mail
-    msg = Message(subject, recipients=recipients)
+    msg = Message(subject, recipients=recipients, reply_to=reply_to)
     msg.html = html_body
     if text_body:
         msg.body = text_body
