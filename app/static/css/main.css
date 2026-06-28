@@ -549,6 +549,7 @@ a:hover {
     justify-content: flex-end;
 }
 
+
 .match-card__avatar {
     width: 28px;
     height: 28px;
@@ -656,6 +657,14 @@ a:hover {
 }
 
 .match-score-table__win {
+    font-weight: 700;
+    color: var(--accent-color);
+}
+
+.match-detail__winner-badge {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.8rem;
     font-weight: 700;
     color: var(--accent-color);
 }

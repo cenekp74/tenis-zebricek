@@ -43,3 +43,13 @@ class Match(db.Model):
     player2 = db.relationship('User', foreign_keys=[player2_id], backref='matches_as_player2')
     recorded_by = db.relationship('User', foreign_keys=[recorded_by_id])
     challenge = db.relationship('Challenge', foreign_keys=[challenge_id])
+
+    @property
+    def winner(self):
+        p1_sets = sum(1 for s in self.sets if s[0] > s[1])
+        p2_sets = len(self.sets) - p1_sets
+        if p1_sets > p2_sets:
+            return self.player1
+        if p2_sets > p1_sets:
+            return self.player2
+        return None

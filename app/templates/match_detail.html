@@ -23,6 +23,9 @@
                     <a href="{{ url_for('public_profile', username=match.player1.username) }}">{{ match.player1.name }}</a>
                 </p>
                 <p class="profile-info__meta">Žebříček: #{{ match.player1_rank if match.player1_rank > 0 else '—' }}</p>
+                {% if match.winner == match.player1 %}
+                    <p class="match-detail__winner-badge"><i class="fa-solid fa-trophy"></i> Vítěz</p>
+                {% endif %}
             </div>
         </div>
 
@@ -62,6 +65,9 @@
                     <a href="{{ url_for('public_profile', username=match.player2.username) }}">{{ match.player2.name }}</a>
                 </p>
                 <p class="profile-info__meta">Žebříček: #{{ match.player2_rank if match.player2_rank > 0 else '—' }}</p>
+                {% if match.winner == match.player2 %}
+                    <p class="match-detail__winner-badge"><i class="fa-solid fa-trophy"></i> Vítěz</p>
+                {% endif %}
             </div>
         </div>
     </div>

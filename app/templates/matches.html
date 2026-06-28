@@ -21,15 +21,23 @@
                     <div class="match-card__players">
                         <span class="match-card__player">
                             <img src="{{ url_for('public_profile_picture', filename=m.player1.pp_filename) }}" alt="" class="match-card__avatar">
-                            {{ m.player1.name }}
-                            <span class="match-card__rank">#{{ m.player1_rank if m.player1_rank > 0 else '—' }}</span>
+                            <span>
+                                {{ m.player1.name }} <span class="match-card__rank">#{{ m.player1_rank if m.player1_rank > 0 else '—' }}</span>
+                                {% if m.winner == m.player1 %}
+                                    <span class="match-detail__winner-badge"><i class="fa-solid fa-trophy"></i> Vítěz</span>
+                                {% endif %}
+                            </span>
                         </span>
                         <span class="match-card__score">
                             {% for s in m.sets %}{{ s[0] }}:{{ s[1] }}{% if not loop.last %}, {% endif %}{% endfor %}
                         </span>
                         <span class="match-card__player match-card__player--right">
-                            <span class="match-card__rank">#{{ m.player2_rank if m.player2_rank > 0 else '—' }}</span>
-                            {{ m.player2.name }}
+                            <span>
+                                <span class="match-card__rank">#{{ m.player2_rank if m.player2_rank > 0 else '—' }}</span> {{ m.player2.name }}
+                                {% if m.winner == m.player2 %}
+                                    <span class="match-detail__winner-badge"><i class="fa-solid fa-trophy"></i> Vítěz</span>
+                                {% endif %}
+                            </span>
                             <img src="{{ url_for('public_profile_picture', filename=m.player2.pp_filename) }}" alt="" class="match-card__avatar">
                         </span>
                     </div>
