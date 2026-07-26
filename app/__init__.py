@@ -12,6 +12,7 @@ app = Flask(__name__)
 app.secret_key = 'dev'
 app.config.from_pyfile('../instance/config.py')
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///site.db'
+app.config.setdefault('MAX_CHALLENGE_RANK_DIFF', 5)  # how many rungs above himself a player may challenge
 
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)

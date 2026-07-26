@@ -5,6 +5,7 @@
 {% block body %}
 <div class="profile-edit">
     <h2><i class="fa-solid fa-table-tennis-paddle-ball"></i> Zaznamenat výsledek</h2>
+    {% if form.opponent.choices %}
     <form method="POST" id="matchForm">
         {{ form.hidden_tag() }} <!-- sets_data field se renderuje timto protoze je hidden, takze neni treba renderovat znovu -->
 
@@ -208,4 +209,7 @@
     addRow();
 })();
 </script>
+    {% else %}
+        <p class="challenges-empty">Nemáte s kým odehraný zápas zaznamenat — protihráč musí být v žebříčku max. {{ max_challenge_rank_diff }} příček od vás.</p>
+    {% endif %}
 {% endblock %}

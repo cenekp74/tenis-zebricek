@@ -1,6 +1,7 @@
 import sys
 from app import app, db, bcrypt
 from app.db_classes import User
+from app.ladder import place_at_bottom
 
 def main():
     username = input("Username: ").strip()
@@ -28,6 +29,7 @@ def main():
     with app.app_context():
         hashed = bcrypt.generate_password_hash(password).decode("utf-8")
         user = User(username=username, email=email, name=name, password=hashed, admin=int(is_admin))
+        place_at_bottom(user)
         db.session.add(user)
         db.session.commit()
         print(f"User '{username}' created (admin={is_admin}).")

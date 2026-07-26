@@ -5,6 +5,7 @@
 {% block body %}
 <div class="profile-edit">
     <h2>Vyzvat hráče</h2>
+    {% if form.opponent.choices %}
     <form method="POST">
         {{ form.hidden_tag() }}
 
@@ -25,5 +26,8 @@
             {{ form.submit(class="btn-primary") }}
         </div>
     </form>
+    {% else %}
+        <p class="challenges-empty">Nikdo nad vámi není v dosahu {{ max_challenge_rank_diff }} příček, koho byste mohli vyzvat.</p>
+    {% endif %}
 </div>
 {% endblock %}

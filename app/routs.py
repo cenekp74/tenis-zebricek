@@ -9,6 +9,7 @@ from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from app.db_classes import User, Challenge, Match
 from app.forms import LoginForm, EditProfileForm, ChallengeForm, RecordMatchForm
 from app.email_utils import queue_email
+from app.ladder import apply_match_result, challengeable_opponents, recordable_opponents, max_challenge_rank_diff
 
 TOKEN_MAX_AGE = 7 * 24 * 3600  # 7 days
 
@@ -77,15 +78,27 @@ def public_profile_picture(filename):
 @app.route('/u/<username>')
 def public_profile(username):
     user = User.query.filter_by(username=username).first_or_404()
-    return render_template('public_profile.html', user=user)
+    can_challenge = (
+        current_user.is_authenticated
+        and current_user.id != user.id
+        and current_user.rank
+        and user.rank
+        and user.rank < current_user.rank
+        and current_user.rank - user.rank <= max_challenge_rank_diff()
+    )
+    return render_template('public_profile.html', user=user, can_challenge=can_challenge)
 
 @app.route('/challenge', methods=['GET', 'POST'])
 @login_required
 def challenge():
+    if not current_user.rank:
+        flash('Nejste zatím zařazen/a v žebříčku, zatím tedy nemůžete nikoho vyzvat.', 'danger')
+        return redirect(url_for('zebricek'))
+
     form = ChallengeForm()
-    opponents = User.query.filter(User.id != current_user.id).order_by(User.rank).all()
+    opponents = challengeable_opponents(current_user)
     form.opponent.choices = [
-        (u.id, f"{u.name} (#{u.rank if u.rank > 0 else '—'})")
+        (u.id, f"{u.name} (#{u.rank})")
         for u in opponents
     ]
     if request.method == 'GET':
@@ -112,7 +125,7 @@ def challenge():
         )
         flash('Výzva byla odeslána!', 'success')
         return redirect('/')
-    return render_template('challenge.html', form=form)
+    return render_template('challenge.html', form=form, max_challenge_rank_diff=max_challenge_rank_diff())
 
 @app.route('/my-challenges')
 @login_required
@@ -139,10 +152,14 @@ def logout():
 @app.route('/record-match', methods=['GET', 'POST'])
 @login_required
 def record_match():
+    if not current_user.rank:
+        flash('Nejste zatím zařazen/a v žebříčku, zatím tedy nemůžete zaznamenat výsledek.', 'danger')
+        return redirect(url_for('zebricek'))
+
     form = RecordMatchForm()
-    opponents = User.query.filter(User.id != current_user.id).order_by(User.rank).all()
+    opponents = recordable_opponents(current_user)
     form.opponent.choices = [
-        (u.id, f"{u.name} (#{u.rank if u.rank > 0 else '—'})")
+        (u.id, f"{u.name} (#{u.rank})")
         for u in opponents
     ]
 
@@ -222,7 +239,7 @@ def record_match():
         flash('Výsledek byl uložen. Soupeř obdržel e-mail s žádostí o potvrzení.', 'success')
         return redirect(url_for('match_detail', match_id=match.id))
 
-    return render_template('record_match.html', form=form)
+    return render_template('record_match.html', form=form, max_challenge_rank_diff=max_challenge_rank_diff())
 
 @app.route('/matches')
 def matches():
@@ -260,6 +277,7 @@ def confirm_match(token):
         abort(403)
 
     match.verified = True
+    apply_match_result(match)
     db.session.commit()
     flash('Výsledek zápasu byl úspěšně potvrzen!', 'success')
     return redirect(url_for('match_detail', match_id=match.id))
