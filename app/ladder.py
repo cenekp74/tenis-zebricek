@@ -62,6 +62,15 @@ def move_down(user):
         below.rank, user.rank = user.rank, below.rank
 
 
+def remove_from_ladder(user):
+    """Close the gap left in the ladder by a player who is about to be deleted."""
+    if not user.rank:
+        return
+    displaced = User.query.filter(User.rank > user.rank).all()
+    for u in displaced:
+        u.rank -= 1
+
+
 def apply_match_result(match):
     """Move the winner above the loser on the ladder if a lower-ranked
     player beat a higher-ranked opponent. Everyone previously between

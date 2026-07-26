@@ -36,6 +36,9 @@
                         <i class="fa-solid fa-arrow-down"></i>
                     </button>
                 </form>
+                <a href="{{ url_for('delete_player', user_id=player.id) }}" class="ladder__action-btn ladder__action-btn--danger" title="Smazat hráče">
+                    <i class="fa-solid fa-trash-can"></i>
+                </a>
             </span>
         </li>
         {% else %}
@@ -56,12 +59,17 @@
             {% if not player.is_registered %}
                 <span class="ladder__unranked">čeká na dokončení registrace</span>
             {% endif %}
-            <form method="POST" action="{{ url_for('admin_ranking_place', user_id=player.id) }}" style="margin-left:auto;">
-                {{ form.hidden_tag() }}
-                <button type="submit" class="btn-secondary">
-                    <i class="fa-solid fa-arrow-down-to-line"></i> Zařadit na konec žebříčku
-                </button>
-            </form>
+            <span class="ladder__actions" style="margin-left:auto;">
+                <form method="POST" action="{{ url_for('admin_ranking_place', user_id=player.id) }}">
+                    {{ form.hidden_tag() }}
+                    <button type="submit" class="btn-secondary">
+                        <i class="fa-solid fa-arrow-down-to-line"></i> Zařadit na konec žebříčku
+                    </button>
+                </form>
+                <a href="{{ url_for('delete_player', user_id=player.id) }}" class="ladder__action-btn ladder__action-btn--danger" title="Smazat hráče">
+                    <i class="fa-solid fa-trash-can"></i>
+                </a>
+            </span>
         </li>
         {% else %}
         <li class="ladder__empty">Žádní nezařazení hráči.</li>

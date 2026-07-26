@@ -502,6 +502,25 @@ a:hover {
     background-color: var(--bg-color);
 }
 
+.btn-danger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background-color: #dc2626;
+    color: #fff;
+    border: none;
+    border-radius: var(--border-radius);
+    padding: 0.5rem 1.25rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.15s;
+}
+
+.btn-danger:hover {
+    background-color: #b91c1c;
+}
+
 /* ── Match list ── */
 
 .match-list {

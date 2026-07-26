@@ -118,3 +118,9 @@
     opacity: 0.35;
     cursor: default;
 }
+
+.ladder__action-btn--danger:hover {
+    background-color: #fee2e2;
+    color: #dc2626;
+    border-color: #dc2626;
+}

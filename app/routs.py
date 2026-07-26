@@ -9,7 +9,7 @@ from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from app.db_classes import User, Challenge, Match
 from app.forms import LoginForm, EditProfileForm, ChallengeForm, RecordMatchForm, AddPlayerForm, CompleteInviteForm, AdminActionForm
 from app.email_utils import queue_email
-from app.ladder import apply_match_result, challengeable_opponents, recordable_opponents, max_challenge_rank_diff, place_at_bottom, move_up, move_down
+from app.ladder import apply_match_result, challengeable_opponents, recordable_opponents, max_challenge_rank_diff, place_at_bottom, move_up, move_down, remove_from_ladder
 from app.utils import admin_required
 
 TOKEN_MAX_AGE = 7 * 24 * 3600  # 7 days
@@ -207,6 +207,39 @@ def admin_ranking_place(user_id):
             place_at_bottom(user)
             db.session.commit()
     return redirect(url_for('admin_ranking'))
+
+@app.route('/admin/players/<int:user_id>/delete', methods=['GET', 'POST'])
+@admin_required
+def delete_player(user_id):
+    user = User.query.get_or_404(user_id)
+    match_count = Match.query.filter(
+        (Match.player1_id == user.id) | (Match.player2_id == user.id) | (Match.recorded_by_id == user.id)
+    ).count()
+    challenge_count = Challenge.query.filter(
+        (Challenge.challenger_id == user.id) | (Challenge.opponent_id == user.id)
+    ).count()
+    can_delete = match_count == 0 and challenge_count == 0
+
+    form = AdminActionForm()
+    if can_delete and form.validate_on_submit():
+        remove_from_ladder(user)
+        if user.pp_filename and user.pp_filename != DEFAULT_PP_FILENAME:
+            pp_path = os.path.join(app.instance_path, 'pp', user.pp_filename)
+            if os.path.exists(pp_path):
+                os.remove(pp_path)
+        db.session.delete(user)
+        db.session.commit()
+        flash(f'Hráč {user.name} byl odstraněn.', 'success')
+        return redirect(url_for('admin_ranking'))
+
+    return render_template(
+        'admin_delete_player.html',
+        user=user,
+        form=form,
+        can_delete=can_delete,
+        match_count=match_count,
+        challenge_count=challenge_count,
+    )
 
 @app.route('/admin/add-player', methods=['GET', 'POST'])
 @admin_required

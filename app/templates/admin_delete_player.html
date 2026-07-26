@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Smazat hráče – Astra Tenis{% endblock %}
+
+{% block body %}
+<div class="profile-edit">
+    <h2><i class="fa-solid fa-triangle-exclamation"></i> Smazat hráče {{ user.name }}?</h2>
+
+    {% if can_delete %}
+        <p class="form-hint">
+            Tato akce je nevratná. Hráč <b>{{ user.name }}</b> ({{ user.email }}) bude z žebříčku i systému úplně odstraněn.
+        </p>
+        <form method="POST" onsubmit="return confirm('Opravdu nevratně smazat tohoto hráče?');">
+            {{ form.hidden_tag() }}
+            <div class="form-actions">
+                <button type="submit" class="btn-danger">
+                    <i class="fa-solid fa-trash-can"></i> Ano, smazat hráče
+                </button>
+                <a href="{{ url_for('admin_ranking') }}" class="btn-secondary">Zpět</a>
+            </div>
+        </form>
+    {% else %}
+        <p class="form-error">
+            Hráče <b>{{ user.name }}</b> nelze smazat, protože má v systému
+            {% if match_count %}{{ match_count }} zápas(y){% endif %}
+            {% if match_count and challenge_count %} a {% endif %}
+            {% if challenge_count %}{{ challenge_count }} výzvu/y{% endif %}.
+            Smazání hráče s historií zápasů/výzev by rozbilo záznamy ostatních hráčů.
+        </p>
+        <div class="form-actions">
+            <a href="{{ url_for('admin_ranking') }}" class="btn-secondary">Zpět</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
