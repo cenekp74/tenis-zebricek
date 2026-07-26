@@ -51,3 +51,12 @@ class CompleteInviteForm(FlaskForm):
 class AdminActionForm(FlaskForm):
     """CSRF-only form backing the up/down/place buttons on the admin ranking page."""
     pass
+
+class RequestPasswordResetForm(FlaskForm):
+    email = StringField('E-mail', validators=[DataRequired(), Email()])
+    submit = SubmitField('Odeslat odkaz pro obnovu hesla')
+
+class ResetPasswordForm(FlaskForm):
+    password = PasswordField('Nové heslo', validators=[DataRequired(), Length(min=6)])
+    password2 = PasswordField('Nové heslo znovu', validators=[DataRequired(), EqualTo('password', message='Hesla se neshodují.')])
+    submit = SubmitField('Změnit heslo')

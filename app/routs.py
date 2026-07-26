@@ -7,13 +7,14 @@ from flask_login import login_required, login_user, logout_user, current_user
 from werkzeug.utils import secure_filename
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from app.db_classes import User, Challenge, Match
-from app.forms import LoginForm, EditProfileForm, ChallengeForm, RecordMatchForm, AddPlayerForm, CompleteInviteForm, AdminActionForm
+from app.forms import LoginForm, EditProfileForm, ChallengeForm, RecordMatchForm, AddPlayerForm, CompleteInviteForm, AdminActionForm, RequestPasswordResetForm, ResetPasswordForm
 from app.email_utils import queue_email
 from app.ladder import apply_match_result, challengeable_opponents, recordable_opponents, max_challenge_rank_diff, place_at_bottom, move_up, move_down, remove_from_ladder
 from app.utils import admin_required
 
 TOKEN_MAX_AGE = 7 * 24 * 3600  # 7 days
 INVITE_TOKEN_MAX_AGE = 7 * 24 * 3600  # 7 days
+RESET_TOKEN_MAX_AGE = 3600  # 1 hour
 DEFAULT_PP_FILENAME = 'default_pp.png'
 
 
@@ -35,6 +36,16 @@ def _make_invite_token(user_id):
 def _load_invite_token(token):
     s = URLSafeTimedSerializer(app.config['SECRET_KEY'])
     return s.loads(token, max_age=INVITE_TOKEN_MAX_AGE, salt='invite')
+
+
+def _make_reset_token(user):
+    s = URLSafeTimedSerializer(app.config['SECRET_KEY'])
+    return s.dumps({'user_id': user.id, 'pw_hash': user.password}, salt='reset-password')
+
+
+def _load_reset_token(token):
+    s = URLSafeTimedSerializer(app.config['SECRET_KEY'])
+    return s.loads(token, max_age=RESET_TOKEN_MAX_AGE, salt='reset-password')
 
 MAX_PP_SIZE = 2 * 1024 * 1024  # 2 MB
 
@@ -169,6 +180,46 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('login'))
+
+@app.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    form = RequestPasswordResetForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user and user.is_registered:
+            token = _make_reset_token(user)
+            reset_url = url_for('reset_password', token=token, _external=True)
+            queue_email(
+                subject='Obnova hesla – žebříček TJ Astra tenis',
+                recipients=[user.email],
+                template='reset-password-email.html',
+                name=user.name,
+                reset_url=reset_url,
+            )
+        flash('Pokud e-mail existuje v systému, byl na něj odeslán odkaz pro obnovu hesla.', 'info')
+        return redirect(url_for('login'))
+    return render_template('forgot_password.html', form=form)
+
+@app.route('/reset-password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    try:
+        data = _load_reset_token(token)
+    except (SignatureExpired, BadSignature):
+        flash('Odkaz pro obnovu hesla je neplatný nebo vypršel.', 'danger')
+        return redirect(url_for('forgot_password'))
+
+    user = User.query.get_or_404(data['user_id'])
+    if user.password != data['pw_hash']:
+        flash('Odkaz pro obnovu hesla je neplatný nebo už byl použit.', 'danger')
+        return redirect(url_for('forgot_password'))
+
+    form = ResetPasswordForm()
+    if form.validate_on_submit():
+        user.password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+        db.session.commit()
+        flash('Heslo bylo úspěšně změněno. Přihlaste se.', 'success')
+        return redirect(url_for('login'))
+    return render_template('reset_password.html', form=form, name=user.name)
 
 @app.route('/admin')
 @admin_required
