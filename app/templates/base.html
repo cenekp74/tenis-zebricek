@@ -42,8 +42,8 @@
                         <i class="fa-solid fa-user"></i> {{ current_user.username }}
                     </a>
                     {% if current_user.admin %}
-                        <a href="{{ url_for('add_player') }}" class="navbar-link">
-                            <i class="fa-solid fa-user-plus"></i> Přidat hráče
+                        <a href="{{ url_for('admin_dashboard') }}" class="navbar-link">
+                            <i class="fa-solid fa-gear"></i> Administrace
                         </a>
                     {% endif %}
                     <a href="{{ url_for('logout') }}" class="navbar-link navbar-link--accent">Odhlásit</a>

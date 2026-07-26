@@ -44,6 +44,24 @@ def recordable_opponents(user):
     )
 
 
+def move_up(user):
+    """Swap a ranked player with whoever is directly above them."""
+    if not user.rank or user.rank <= 1:
+        return
+    above = User.query.filter_by(rank=user.rank - 1).first()
+    if above:
+        above.rank, user.rank = user.rank, above.rank
+
+
+def move_down(user):
+    """Swap a ranked player with whoever is directly below them."""
+    if not user.rank:
+        return
+    below = User.query.filter_by(rank=user.rank + 1).first()
+    if below:
+        below.rank, user.rank = user.rank, below.rank
+
+
 def apply_match_result(match):
     """Move the winner above the loser on the ladder if a lower-ranked
     player beat a higher-ranked opponent. Everyone previously between

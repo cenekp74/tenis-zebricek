@@ -85,3 +85,36 @@
     padding: 1rem;
     text-align: center;
 }
+
+.ladder__actions {
+    display: flex;
+    gap: 0.35rem;
+    flex-shrink: 0;
+}
+
+.ladder__actions form {
+    margin: 0;
+}
+
+.ladder__action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    background: #fff;
+    color: var(--text-color);
+    border: 1px solid var(--nav-border);
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.ladder__action-btn:hover {
+    background-color: var(--bg-color);
+}
+
+.ladder__action-btn:disabled {
+    opacity: 0.35;
+    cursor: default;
+}

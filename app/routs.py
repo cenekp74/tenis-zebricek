@@ -7,9 +7,9 @@ from flask_login import login_required, login_user, logout_user, current_user
 from werkzeug.utils import secure_filename
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from app.db_classes import User, Challenge, Match
-from app.forms import LoginForm, EditProfileForm, ChallengeForm, RecordMatchForm, AddPlayerForm, CompleteInviteForm
+from app.forms import LoginForm, EditProfileForm, ChallengeForm, RecordMatchForm, AddPlayerForm, CompleteInviteForm, AdminActionForm
 from app.email_utils import queue_email
-from app.ladder import apply_match_result, challengeable_opponents, recordable_opponents, max_challenge_rank_diff
+from app.ladder import apply_match_result, challengeable_opponents, recordable_opponents, max_challenge_rank_diff, place_at_bottom, move_up, move_down
 from app.utils import admin_required
 
 TOKEN_MAX_AGE = 7 * 24 * 3600  # 7 days
@@ -169,6 +169,44 @@ def login():
 def logout():
     logout_user()
     return redirect(url_for('login'))
+
+@app.route('/admin')
+@admin_required
+def admin_dashboard():
+    return render_template('admin_dashboard.html')
+
+@app.route('/admin/ranking')
+@admin_required
+def admin_ranking():
+    ranked = User.query.filter(User.rank > 0).order_by(User.rank).all()
+    unranked = User.query.filter(User.rank == 0).order_by(User.id).all()
+    return render_template('admin_ranking.html', ranked=ranked, unranked=unranked, form=AdminActionForm())
+
+@app.route('/admin/ranking/<int:user_id>/up', methods=['POST'])
+@admin_required
+def admin_ranking_up(user_id):
+    if AdminActionForm().validate_on_submit():
+        move_up(User.query.get_or_404(user_id))
+        db.session.commit()
+    return redirect(url_for('admin_ranking'))
+
+@app.route('/admin/ranking/<int:user_id>/down', methods=['POST'])
+@admin_required
+def admin_ranking_down(user_id):
+    if AdminActionForm().validate_on_submit():
+        move_down(User.query.get_or_404(user_id))
+        db.session.commit()
+    return redirect(url_for('admin_ranking'))
+
+@app.route('/admin/ranking/<int:user_id>/place', methods=['POST'])
+@admin_required
+def admin_ranking_place(user_id):
+    if AdminActionForm().validate_on_submit():
+        user = User.query.get_or_404(user_id)
+        if not user.rank:
+            place_at_bottom(user)
+            db.session.commit()
+    return redirect(url_for('admin_ranking'))
 
 @app.route('/admin/add-player', methods=['GET', 'POST'])
 @admin_required

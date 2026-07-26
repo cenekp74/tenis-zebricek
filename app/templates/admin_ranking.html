@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% from "_macros.html" import player_link %}
+
+{% block title %}Upravit pořadí – Astra Tenis{% endblock %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/zebricek.css') }}">
+{% endblock %}
+
+{% block body %}
+    <h1>Upravit pořadí v žebříčku</h1>
+
+    <ol class="ladder">
+        {% for player in ranked %}
+        <li class="ladder__item">
+            <span class="ladder__rank">{{ player.rank }}</span>
+            <span class="ladder__player">
+                <div class="ladder__avatar">
+                    <img src="{{ url_for('public_profile_picture', filename=player.pp_filename) }}" alt="{{ player.name }}">
+                </div>
+                <span class="ladder__name">{{ player_link(player) }}</span>
+            </span>
+            {% if not player.is_registered %}
+                <span class="ladder__unranked">čeká na dokončení registrace</span>
+            {% endif %}
+            <span class="ladder__actions">
+                <form method="POST" action="{{ url_for('admin_ranking_up', user_id=player.id) }}">
+                    {{ form.hidden_tag() }}
+                    <button type="submit" class="ladder__action-btn" title="Posunout nahoru" {% if loop.first %}disabled{% endif %}>
+                        <i class="fa-solid fa-arrow-up"></i>
+                    </button>
+                </form>
+                <form method="POST" action="{{ url_for('admin_ranking_down', user_id=player.id) }}">
+                    {{ form.hidden_tag() }}
+                    <button type="submit" class="ladder__action-btn" title="Posunout dolů" {% if loop.last %}disabled{% endif %}>
+                        <i class="fa-solid fa-arrow-down"></i>
+                    </button>
+                </form>
+            </span>
+        </li>
+        {% else %}
+        <li class="ladder__empty">Žádní zařazení hráči.</li>
+        {% endfor %}
+    </ol>
+
+    <h2 style="margin-top:2rem;">Nezařazení hráči</h2>
+    <ol class="ladder">
+        {% for player in unranked %}
+        <li class="ladder__item">
+            <span class="ladder__player">
+                <div class="ladder__avatar">
+                    <img src="{{ url_for('public_profile_picture', filename=player.pp_filename) }}" alt="{{ player.name }}">
+                </div>
+                <span class="ladder__name">{{ player_link(player) }}</span>
+            </span>
+            {% if not player.is_registered %}
+                <span class="ladder__unranked">čeká na dokončení registrace</span>
+            {% endif %}
+            <form method="POST" action="{{ url_for('admin_ranking_place', user_id=player.id) }}" style="margin-left:auto;">
+                {{ form.hidden_tag() }}
+                <button type="submit" class="btn-secondary">
+                    <i class="fa-solid fa-arrow-down-to-line"></i> Zařadit na konec žebříčku
+                </button>
+            </form>
+        </li>
+        {% else %}
+        <li class="ladder__empty">Žádní nezařazení hráči.</li>
+        {% endfor %}
+    </ol>
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block title %}Administrace – Astra Tenis{% endblock %}
+
+{% block body %}
+<div class="challenges-section">
+    <h2 class="challenges-section__title">
+        <i class="fa-solid fa-gear"></i> Administrace
+    </h2>
+    <ul class="challenge-list">
+        <li class="challenge-card">
+            <div class="challenge-card__body">
+                <p class="challenge-card__who">
+                    <a href="{{ url_for('add_player') }}"><i class="fa-solid fa-user-plus"></i> Přidat hráče</a>
+                </p>
+                <p class="challenge-card__message">Zadejte jméno a e-mail nového hráče, ten obdrží pozvánku k dokončení registrace.</p>
+            </div>
+        </li>
+        <li class="challenge-card">
+            <div class="challenge-card__body">
+                <p class="challenge-card__who">
+                    <a href="{{ url_for('admin_ranking') }}"><i class="fa-solid fa-arrow-up-wide-short"></i> Upravit pořadí v žebříčku</a>
+                </p>
+                <p class="challenge-card__message">Ruční přeřazení hráčů a zařazení nových/nezařazených hráčů do žebříčku.</p>
+            </div>
+        </li>
+    </ul>
+</div>
+{% endblock %}

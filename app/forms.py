@@ -47,3 +47,7 @@ class CompleteInviteForm(FlaskForm):
     def validate_username(self, username):
         if User.query.filter_by(username=username.data).first():
             raise ValidationError('Toto uživatelské jméno je již obsazené.')
+
+class AdminActionForm(FlaskForm):
+    """CSRF-only form backing the up/down/place buttons on the admin ranking page."""
+    pass
