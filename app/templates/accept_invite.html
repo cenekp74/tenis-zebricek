@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}Dokončení registrace – Astra Tenis{% endblock %}
+
+{% block body %}
+<div class="profile-edit">
+    <h2><i class="fa-solid fa-user-check"></i> Vítejte, {{ name }}!</h2>
+    <p class="form-hint">Dokončete registraci nastavením uživatelského jména, hesla a volitelně profilové fotografie.</p>
+    <form method="POST" enctype="multipart/form-data">
+        {{ form.hidden_tag() }}
+
+        <div class="form-field">
+            {{ form.username.label }}
+            {{ form.username(class="form-input") }}
+            {% for error in form.username.errors %}
+                <p class="form-error">{{ error }}</p>
+            {% endfor %}
+        </div>
+
+        <div class="form-field">
+            {{ form.password.label }}
+            {{ form.password(class="form-input") }}
+            {% for error in form.password.errors %}
+                <p class="form-error">{{ error }}</p>
+            {% endfor %}
+        </div>
+
+        <div class="form-field">
+            {{ form.password2.label }}
+            {{ form.password2(class="form-input") }}
+            {% for error in form.password2.errors %}
+                <p class="form-error">{{ error }}</p>
+            {% endfor %}
+        </div>
+
+        <div class="form-field">
+            {{ form.picture.label }}
+            {{ form.picture(accept="image/jpeg,image/png,image/webp") }}
+            <p class="form-hint">Povolené formáty: jpg, png, webp — max. 2 MB.</p>
+            {% for error in form.picture.errors %}
+                <p class="form-error">{{ error }}</p>
+            {% endfor %}
+        </div>
+
+        <div class="form-actions">
+            {{ form.submit(class="btn-primary") }}
+        </div>
+    </form>
+</div>
+{% endblock %}

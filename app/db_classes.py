@@ -9,13 +9,17 @@ def load_user(user_id):
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(20), unique=True, nullable=False)
+    username = db.Column(db.String(20), unique=True, nullable=True)  # NULL until the invited player finishes registration
     name = db.Column(db.String, unique=False, nullable=False)
     email = db.Column(db.String(120), nullable=False, unique=True)
-    password = db.Column(db.String(60), nullable=False)
+    password = db.Column(db.String(60), nullable=True)  # NULL until the invited player finishes registration
     admin = db.Column(db.Integer, nullable=False, default=0)
     pp_filename = db.Column(db.String(64), nullable=False, default="default_pp.png")
     rank = db.Column(db.Integer, unique=False, nullable=False, default=0) # 0 means unranked
+
+    @property
+    def is_registered(self):
+        return self.username is not None and self.password is not None
 
 class Challenge(db.Model):
     id = db.Column(db.Integer, primary_key=True)

@@ -11,13 +11,24 @@
         {% for player in players %}
         <li class="ladder__item">
             <span class="ladder__rank">{{ loop.index }}</span>
+            {% if player.username %}
             <a href="{{ url_for('public_profile', username=player.username) }}" class="ladder__player">
                 <div class="ladder__avatar">
                     <img src="{{ url_for('public_profile_picture', filename=player.pp_filename) }}" alt="{{ player.name }}">
                 </div>
                 <span class="ladder__name">{{ player.name }}</span>
             </a>
-            {% if player.rank == 0 %}
+            {% else %}
+            <span class="ladder__player">
+                <div class="ladder__avatar">
+                    <img src="{{ url_for('public_profile_picture', filename=player.pp_filename) }}" alt="{{ player.name }}">
+                </div>
+                <span class="ladder__name">{{ player.name }}</span>
+            </span>
+            {% endif %}
+            {% if not player.is_registered %}
+                <span class="ladder__unranked">čeká na dokončení registrace</span>
+            {% elif player.rank == 0 %}
                 <span class="ladder__unranked">neřazený</span>
             {% endif %}
         </li>

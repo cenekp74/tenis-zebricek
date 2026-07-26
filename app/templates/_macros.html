@@ -1,0 +1,7 @@
+{% macro player_link(user) -%}
+{%- if user.username -%}
+<a href="{{ url_for('public_profile', username=user.username) }}">{{ user.name }}</a>
+{%- else -%}
+{{ user.name }}
+{%- endif -%}
+{%- endmacro %}

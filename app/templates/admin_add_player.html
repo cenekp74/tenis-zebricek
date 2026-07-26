@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block title %}Přidat hráče – Astra Tenis{% endblock %}
+
+{% block body %}
+<div class="profile-edit">
+    <h2><i class="fa-solid fa-user-plus"></i> Přidat hráče</h2>
+    <form method="POST">
+        {{ form.hidden_tag() }}
+
+        <div class="form-field">
+            {{ form.name.label }}
+            {{ form.name(class="form-input") }}
+            {% for error in form.name.errors %}
+                <p class="form-error">{{ error }}</p>
+            {% endfor %}
+        </div>
+
+        <div class="form-field">
+            {{ form.email.label }}
+            {{ form.email(class="form-input") }}
+            {% for error in form.email.errors %}
+                <p class="form-error">{{ error }}</p>
+            {% endfor %}
+        </div>
+
+        <p class="form-hint">Hráč obdrží e-mail s odkazem, na kterém si nastaví uživatelské jméno, heslo a profilovou fotografii. Do žebříčku se zařadí až později (zatím bez umístění).</p>
+
+        <div class="form-actions">
+            {{ form.submit(class="btn-primary") }}
+        </div>
+    </form>
+</div>
+{% endblock %}

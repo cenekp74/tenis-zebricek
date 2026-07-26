@@ -7,11 +7,14 @@ from flask_login import login_required, login_user, logout_user, current_user
 from werkzeug.utils import secure_filename
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from app.db_classes import User, Challenge, Match
-from app.forms import LoginForm, EditProfileForm, ChallengeForm, RecordMatchForm
+from app.forms import LoginForm, EditProfileForm, ChallengeForm, RecordMatchForm, AddPlayerForm, CompleteInviteForm
 from app.email_utils import queue_email
 from app.ladder import apply_match_result, challengeable_opponents, recordable_opponents, max_challenge_rank_diff
+from app.utils import admin_required
 
 TOKEN_MAX_AGE = 7 * 24 * 3600  # 7 days
+INVITE_TOKEN_MAX_AGE = 7 * 24 * 3600  # 7 days
+DEFAULT_PP_FILENAME = 'default_pp.png'
 
 
 def _make_match_token(match_id, opponent_id):
@@ -23,7 +26,39 @@ def _load_match_token(token):
     s = URLSafeTimedSerializer(app.config['SECRET_KEY'])
     return s.loads(token, max_age=TOKEN_MAX_AGE)
 
+
+def _make_invite_token(user_id):
+    s = URLSafeTimedSerializer(app.config['SECRET_KEY'])
+    return s.dumps({'user_id': user_id}, salt='invite')
+
+
+def _load_invite_token(token):
+    s = URLSafeTimedSerializer(app.config['SECRET_KEY'])
+    return s.loads(token, max_age=INVITE_TOKEN_MAX_AGE, salt='invite')
+
 MAX_PP_SIZE = 2 * 1024 * 1024  # 2 MB
+
+
+def _save_profile_picture(picture_file, old_filename=None):
+    """Validate and store an uploaded profile picture, returning its new filename."""
+    picture_file.seek(0, 2)
+    size = picture_file.tell()
+    picture_file.seek(0)
+    if size > MAX_PP_SIZE:
+        raise ValueError(f'Soubor je příliš velký (max {int(MAX_PP_SIZE/(1024**2))} MB).')
+
+    ext = os.path.splitext(secure_filename(picture_file.filename))[1].lower()
+    filename = uuid.uuid4().hex + ext
+    pp_dir = os.path.join(app.instance_path, 'pp')
+    os.makedirs(pp_dir, exist_ok=True)
+
+    if old_filename and old_filename != DEFAULT_PP_FILENAME:
+        old_path = os.path.join(pp_dir, old_filename)
+        if os.path.exists(old_path):
+            os.remove(old_path)
+
+    picture_file.save(os.path.join(pp_dir, filename))
+    return filename
 
 @app.route('/')
 @app.route('/index')
@@ -42,25 +77,11 @@ def profile():
     if form.validate_on_submit():
         pp = form.picture.data
         if pp:
-            pp.seek(0, 2)
-            size = pp.tell()
-            pp.seek(0)
-            if size > MAX_PP_SIZE:
-                flash(f'Soubor je příliš velký (max {int(MAX_PP_SIZE/(1024**2))} MB).', 'danger')
+            try:
+                current_user.pp_filename = _save_profile_picture(pp, current_user.pp_filename)
+            except ValueError as exc:
+                flash(str(exc), 'danger')
                 return redirect(url_for('profile'))
-
-            ext = os.path.splitext(secure_filename(pp.filename))[1].lower()
-            filename = uuid.uuid4().hex + ext
-            pp_dir = os.path.join(app.instance_path, 'pp')
-            os.makedirs(pp_dir, exist_ok=True)
-
-            if current_user.pp_filename:
-                old_path = os.path.join(pp_dir, current_user.pp_filename)
-                if os.path.exists(old_path):
-                    os.remove(old_path)
-
-            pp.save(os.path.join(pp_dir, filename))
-            current_user.pp_filename = filename
             db.session.commit()
             flash('Profilová fotografie byla aktualizována.', 'success')
         return redirect(url_for('profile'))
@@ -92,7 +113,7 @@ def public_profile(username):
 @login_required
 def challenge():
     if not current_user.rank:
-        flash('Nejste zatím zařazen/a v žebříčku, zatím tedy nemůžete nikoho vyzvat.', 'danger')
+        flash('Nejste zatím zařazen/a v žebříčku, tudíž nemůžete nikoho vyzvat.', 'danger')
         return redirect(url_for('zebricek'))
 
     form = ChallengeForm()
@@ -149,11 +170,66 @@ def logout():
     logout_user()
     return redirect(url_for('login'))
 
+@app.route('/admin/add-player', methods=['GET', 'POST'])
+@admin_required
+def add_player():
+    form = AddPlayerForm()
+    if form.validate_on_submit():
+        user = User(name=form.name.data, email=form.email.data)
+        db.session.add(user)
+        db.session.commit()
+
+        token = _make_invite_token(user.id)
+        accept_url = url_for('accept_invite', token=token, _external=True)
+        queue_email(
+            subject='Pozvánka do žebříčku TJ Astra tenis',
+            recipients=[user.email],
+            template='invite-email.html',
+            name=user.name,
+            accept_url=accept_url,
+        )
+        flash(f'Hráč {user.name} byl přidán do žebříčku a pozvánka byla odeslána na e-mail {user.email}.', 'success')
+        return redirect(url_for('zebricek'))
+    return render_template('admin_add_player.html', form=form)
+
+@app.route('/invite/<token>', methods=['GET', 'POST'])
+def accept_invite(token):
+    try:
+        data = _load_invite_token(token)
+    except (SignatureExpired, BadSignature):
+        flash('Odkaz pro dokončení registrace je neplatný nebo vypršel.', 'danger')
+        return redirect(url_for('login'))
+
+    user = User.query.get_or_404(data['user_id'])
+
+    if user.is_registered:
+        flash('Tento účet už byl dokončen. Přihlaste se.', 'info')
+        return redirect(url_for('login'))
+
+    form = CompleteInviteForm()
+    if form.validate_on_submit():
+        user.username = form.username.data
+        user.password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
+
+        pp = form.picture.data
+        if pp:
+            try:
+                user.pp_filename = _save_profile_picture(pp)
+            except ValueError as exc:
+                flash(str(exc), 'danger')
+                return render_template('accept_invite.html', form=form, name=user.name)
+
+        db.session.commit()
+        login_user(user)
+        flash('Účet byl úspěšně vytvořen. Vítejte!', 'success')
+        return redirect(url_for('index'))
+    return render_template('accept_invite.html', form=form, name=user.name)
+
 @app.route('/record-match', methods=['GET', 'POST'])
 @login_required
 def record_match():
     if not current_user.rank:
-        flash('Nejste zatím zařazen/a v žebříčku, zatím tedy nemůžete zaznamenat výsledek.', 'danger')
+        flash('Nejste zatím zařazen/a v žebříčku, tudíž nemůžete zaznamenat výsledek.', 'danger')
         return redirect(url_for('zebricek'))
 
     form = RecordMatchForm()
