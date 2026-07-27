@@ -134,9 +134,14 @@ a:hover {
     color: #fff;
 }
 
-.navbar-username {
-    font-size: 0.9rem;
-    color: var(--text-muted);
+.navbar-link--active {
+    background-color: rgba(79, 70, 229, 0.12);
+    color: var(--accent-color);
+}
+
+.navbar-link--active:hover {
+    background-color: rgba(79, 70, 229, 0.18);
+    color: var(--accent-color);
 }
 
 /* ── Mobile navbar ── */
