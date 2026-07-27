@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_macros.html" import match_card %}
 
 {% block title %}{{ user.name }} – Astra Tenis{% endblock %}
 
@@ -30,6 +31,22 @@
         <i>aktuální pořadí: </i>
         <b>{{ '---' if user.rank == 0 else user.rank }}</b>
     </span>
+</div>
+
+<div class="challenges-section">
+    <div class="challenges-section__title">
+        <i class="fa-solid fa-table-tennis-paddle-ball"></i> Odehrané zápasy
+    </div>
+
+    {% if matches %}
+        <ul class="match-list">
+            {% for m in matches %}
+                {{ match_card(m) }}
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="challenges-empty">Zatím nebyly zaznamenány žádné zápasy.</p>
+    {% endif %}
 </div>
 
 {% endblock %}

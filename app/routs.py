@@ -120,7 +120,10 @@ def public_profile(username):
         and user.rank < current_user.rank
         and current_user.rank - user.rank <= max_challenge_rank_diff()
     )
-    return render_template('public_profile.html', user=user, can_challenge=can_challenge)
+    matches = Match.query.filter(
+        or_(Match.player1_id == user.id, Match.player2_id == user.id)
+    ).order_by(Match.played_at.desc()).all()
+    return render_template('public_profile.html', user=user, can_challenge=can_challenge, matches=matches)
 
 @app.route('/challenge', methods=['GET', 'POST'])
 @login_required
