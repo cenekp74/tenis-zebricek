@@ -21,7 +21,7 @@ class RecordMatchForm(FlaskForm):
     submit = SubmitField('Uložit výsledek')
 
 class LoginForm(FlaskForm):
-    username = StringField('Username', validators=[DataRequired()])
+    username = StringField('Uživatelské jméno nebo e-mail', validators=[DataRequired()])
     password = PasswordField('Heslo', validators=[DataRequired()])
     remember = BooleanField('Pamatuj si mě')
     submit = SubmitField('Přihlásit')

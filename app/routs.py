@@ -4,6 +4,7 @@ import json
 from app import app, db, bcrypt
 from flask import render_template, url_for, request, redirect, abort, flash, send_from_directory
 from markupsafe import Markup
+from sqlalchemy import or_
 from flask_login import login_required, login_user, logout_user, current_user
 from werkzeug.utils import secure_filename
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
@@ -171,7 +172,10 @@ def my_challenges():
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data).first()
+        login_value = form.username.data
+        user = User.query.filter(
+            or_(User.username == login_value, User.email == login_value)
+        ).first()
         if user and bcrypt.check_password_hash(user.password, form.password.data):
             login_user(user, remember=form.remember.data)
             return redirect('/')
