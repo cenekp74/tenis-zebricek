@@ -3,6 +3,7 @@ import uuid
 import json
 from app import app, db, bcrypt
 from flask import render_template, url_for, request, redirect, abort, flash, send_from_directory
+from markupsafe import Markup
 from flask_login import login_required, login_user, logout_user, current_user
 from werkzeug.utils import secure_filename
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
@@ -174,6 +175,10 @@ def login():
         if user and bcrypt.check_password_hash(user.password, form.password.data):
             login_user(user, remember=form.remember.data)
             return redirect('/')
+        flash(Markup(
+            'Nesprávné uživatelské jméno nebo heslo. '
+            f'<a href="{url_for("forgot_password")}">Zapomněli jste heslo?</a>'
+        ), 'danger')
     return render_template('login.html', form=form)
 
 @app.route('/logout')
