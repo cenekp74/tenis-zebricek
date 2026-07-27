@@ -301,6 +301,7 @@ a:hover {
     border: 1px solid var(--nav-border);
     border-radius: var(--border-radius);
     padding: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 .profile-edit h2 {
