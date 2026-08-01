@@ -76,7 +76,7 @@ def _save_profile_picture(picture_file, old_filename=None):
 @app.route('/')
 @app.route('/index')
 def index():
-    return render_template('index.html')
+    return redirect(url_for('zebricek'))
 
 @app.route('/zebricek')
 def zebricek():
