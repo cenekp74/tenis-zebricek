@@ -2,7 +2,8 @@
 .env
 venv
 app/__pycache__/
-instance/
+instance/*
+!instance/config.py
 migrations/__pycache__/
 migrations/versions/__pycache__/
 __pycache__/
